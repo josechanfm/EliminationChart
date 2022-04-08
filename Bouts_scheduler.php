@@ -15,7 +15,7 @@ class Bouts_scheduler {
     	$result=array(
     		'set_programs'=>$this->set_programs($contestId),
     		'set_bouts'=>$this->set_bouts($contestId),
-    		'set_bouts_schedule'=>$this->set_bouts_sequence($contestId)
+    		'set_bouts_schedule'=>$this->set_bouts_schedule($contestId)
     	);
     	return isset($result)?$result:false;
     }
@@ -67,18 +67,19 @@ class Bouts_scheduler {
         return isset($result)?$result:false;
     }
 
-    private function set_bouts_sequence($contestId=null){
+    private function set_bouts_schedule($contestId=null){
         $contestSections=$this->get_contest_sections($contestId);
         //echo json_encode($contestSections);
         foreach($contestSections as $cs){
             $programs=$this->CI->programs->get_many_by(array('contest_id'=>$contestId,'date'=>$cs->date,'mat'=>$cs->mat, 'section'=>$cs->section));
             $programIds=array_column(json_decode(json_encode($programs),TRUE),'id');
             $bouts=$this->CI->bouts->get_many_by('program_id',$programIds);
-            $data=$this->CI->bouts_sequence->set_sequence($programs,$bouts);
+            $data=$this->set_sequence($programs,$bouts);
             if(is_array($data)){
-                $this->CI->db->update_batch('match_bouts',$data,'id');
+                $result=$this->CI->db->update_batch('match_bouts',$data,'id');
             }
         }
+        return isset($result)?$result:false;
     }
 
     private function set_sequence($programs,$bouts){
